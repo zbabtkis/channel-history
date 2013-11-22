@@ -2,7 +2,7 @@
 	var root  = this
 	  , app   = root.app
 	  , proto = root.app.prototypes;
-
+	  
 	proto.Network = Backbone.Model.extend({
 		url: function() {
 			return "api/networks/" + this.get('id');

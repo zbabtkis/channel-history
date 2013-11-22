@@ -23,6 +23,7 @@
 	 var locals = {
 	   results: _.groupBy(this.collection.toJSON(), 'orig_name'),
 
+	   // date formatter to use in template.
 	   date: function(date) {
 		var date = new Date(parseFloat(date)*1000)
 		  , m =  date.getMonth() + 1
@@ -52,13 +53,13 @@
   /**
    * MapView
    */
-
   proto.MapView = Backbone.View.extend({
   	initialize: function() {
   		_.bindAll(this, 'render', 'drawSite');
 
   		window.map = this.map = new google.maps.Map(this.el, app.options.map);
 
+  		// Re-render map after animation has occured.
   		setTimeout(this.render, app.options.ANIMATE_LENGTH);
   	},
 
@@ -73,23 +74,34 @@
   		  , site = new google.maps.LatLng(data.lat, data.lon);
 
           if(this.marker) {
+
+          	// Remove previous marker from map.
           	this.marker.setMap(null);
+
           }
 
           if(info) {
+
+          	// Info contains info about a special layout map to use.
                var imageBounds = new google.maps.LatLngBounds(
                     new google.maps.LatLng(info.bounds.x0, info.bounds.y0),
                     new google.maps.LatLng(info.bounds.x1, info.bounds.y1)
                     
                );
+
                this.marker = new google.maps.GroundOverlay(
                     app.options.imageRoot + info.thumbbe,
                     imageBounds, 70);
                this.marker.setMap(this.map);
+
+              	// When layout icon is clicked, trigger a layout selection.
                google.maps.event.addListener(this.marker, 'click', function() {
                	vent.trigger('select:layout', info)
                });
+
           } else {
+
+          	// If no app info, display simple dot on map where station is.
           	this.marker = new google.maps.Circle({
 	               center: site,
 	               fillColor: 'yellow',
@@ -98,6 +110,7 @@
 	          });
           }
 
+          // Center site on selected station.
           this.map.setCenter(site);
           this.map.setZoom(17);
 
@@ -108,7 +121,6 @@
   /**
    * SiteLayoutView
    */
-
   proto.SiteLayout = Backbone.View.extend({
   	events: {
   		'click .close': 'close',

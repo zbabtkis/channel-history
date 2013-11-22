@@ -3,19 +3,46 @@
 	  , app  = root.app
 	  , vent = app.vent;
 
+
+	/**
+	 * Backbone.Region
+	 * ---------------
+	 *
+	 * An extension of Backbone.View designed as a container for single views.
+	 * It's primary function is to manage adding, rendering and removing Backbone.Views 
+	 * from the DOM. A backbone region can also implement transitions between views.
+	 *
+	 * Example
+	 * -------
+	 * var myRegion = new Backbone.Region({el: '#my-region'});
+	 * var myView = Backbone.View.extend({render: function() { this.$el.html("I am a view!")}});
+	 * 
+	 * myRegion.show(myView);
+	 * myRegion.hide();
+	 */
 	Backbone.Region = Backbone.View.extend({
+		/**
+		 * Use this.renderIn to display views inside sub element
+		 */
 		initialize: function(options) {
 			this.container = options.renderIn ? this.$(options.renderIn) : this.$el;
 		},
 
+		/**
+		 * Replaces current view with new view and handles destruction of old view.
+		 *  - Last view is cached so it can be returned to with the "last" method.
+		 */
 		show: function(view) {
 			var $el;
 
+			// Destroy markup currently in region container.
 			this.container.empty();
+			// Remove old cached view.
 			if (this._view) this._view.remove();
 
 			$el = view.render().$el;
 
+			// Cache last view.
 			this._view = this.view;
 			this.view = view;
 
@@ -31,6 +58,7 @@
 		},
 
 		last: function() {
+			// Render last view.
 			this.show(this._view);
 
 			return this;
@@ -39,6 +67,7 @@
 		remove: function() {
 			Backbone.View.prototype.remove.apply(this, arguments);
 
+			// Destroy cached view as well.
 			if(this._view) {
 				this._view.remove();
 				delete this._view;
@@ -46,6 +75,11 @@
 		}
 	});
 
+	/** 
+	 * Custom region to display station trees.
+	 * 
+	 * Can be opend and cloesd with 'toggle' button.
+	 */
 	var StationRegion = Backbone.Region.extend({
 		events: {
 			'click .toggle.close': 'close',
@@ -58,6 +92,7 @@
 		},
 
 		close: function() {
+			// Warn application that sidebar is about to close.
 			vent.trigger('close:sidebar');
 			this.$toggle.attr('class', 'toggle open');
 			this.$el.css({
@@ -68,6 +103,7 @@
 		},
 
 		open: function() {
+			// Warn application that sidebar is about to open.
 			vent.trigger('open:sidebar');
 			this.$toggle.attr('class', 'toggle close');
 			this.$el.css({
@@ -78,32 +114,37 @@
 		}
 	});
 
+	/** 
+	 * Custom region for displaying History
+	 *
+	 * - Can be closed with the '.close' button.
+	 */
 	var HistoryRegion = Backbone.Region.extend({
 		events: {
 			'click .close': 'close'
 		},
 
-		show: function() {
-			Backbone.Region.prototype.show.apply(this, arguments);
-
-			if(app.store.dataViewPref === app.options.views.TABLE) {
-				this.$el.addClass('hovered');
-			}
-		},
-
 		close: function() {
+			// Tell application that history should be closed.
 			vent.trigger('close:history');
 		}
 	});
 
+	/** 
+	 * Custom Region for displaying map and station layout.
+	 */
 	var MapRegion = Backbone.Region.extend({
 		show: function() {
 			Backbone.Region.prototype.show.apply(this, arguments);
 
+			// Map should be redrawn after our view is rendered.
 			vent.trigger('move:map');
 		} 
 	});
 
+	/** 
+	 * Instantiate our app regions!
+	 */
 	app.regions = {
 		networks: new Backbone.Region({
 			el: '#networks',

@@ -3,17 +3,23 @@
 	  , app      = root.app
 	  , settings = app.options;
 
+	//  Map channel history view template options.
 	settings.views = {
 		BLOCK: '#history-template',
 		TABLE: '#history-table-template'
 	};
 
+	// Duration of CSS animations (used for JS callbacks)
 	settings.ANIMATE_LENGTH   = 400;
+	// How wide should we start using responsive layout?
 	settings.RESPONSIVE_WIDTH = 1200;
+	// Margin to use around application.
 	settings.MARGIN           = 50;
 
+	// Where station images are stored on server.
 	settings.imageRoot = '/zhst/sites/images/';
 
+	// Google maps settings (includes cool theme from snazzymaps!.
 	settings.map = {
 	    zoom: 6,
 	    center: new google.maps.LatLng(34.836350, -119.882813),
@@ -156,5 +162,6 @@
 		]
 	};
 
+	// Can use this to determine wheter debug stuff should be displayed.
 	settings.DEBUG = true;
 }).call(this);

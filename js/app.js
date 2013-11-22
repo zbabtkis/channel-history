@@ -1,89 +1,158 @@
+/**
+ * NEES Channel History
+ *  - A web interface for viewing equipment history at various NEES@UCSB stations.
+ * 
+ * @version 1.0.0
+ * @author  Zachary Babtkis <zackbabtkis@gmail.com>
+ * @date    November 22, 2013
+ * @website http://webdlmon.nees.ucsb.edu/zhst/
+ * 
+ * If you can adapt this to work in your own project, feel free to use it 
+ * without restrictions.
+ */
+
 ;(function() {
      "use strict";
 
      var root      = this
-       , app       = root.app
-       , vent      = root.app.vent
-       , proto     = root.app.prototypes
-       , opts      = root.app.options
-       , store     = root.app.store
-       , regions   = root.app.regions;
+       , app       = app
+       , vent      = app.vent
+       , proto     = app.prototypes
+       , opts      = app.options
+       , store     = app.store
+       , regions   = app.regions;
 
      var appController, RouterController, appRouter;
 
+     /**
+      * Default history view should be a  table
+      */
      store.dataViewPref = opts.views.TABLE;
 
-     var networks = new proto.Networks()
+     var networks     = new proto.Networks()
        , stationsView = new proto.NetworkTree();
 
+     /**
+      * App Controller
+      *
+      * - Performs general application tasks and updates Region contents.
+      * - Available callbacks for view events from app vent.
+      */
      appController = {
-          start: function() {
-               regions.map.show(new proto.MapView());
-               regions.networks.show(new proto.NetworkList({
-                    collection: networks
-               }));
 
-               if($(window).width() <= opts.RESPONSIVE_WIDTH) {
-                    $('#app').css('width', ($('#app-wrap').width() - regions.networks.$el.width() - 60) + 'px');
-               }
+          /**
+           * Bootstraps application default state 
+           *  - called when networks are loaded from server call
+           */
+          start: function() {
+               var mapView = new proto.MapView()
+                 , netView = new proto.NetworkList({collection: networks});
+
+               _.bindAll(this, 'onResize');
+
+               // Show default map (without site overlays).
+               regions.map.show(mapView);
+               // Show networks list in Networks region.
+               regions.networks.show(netView);
+
+               // Bind resize event to controller.
+               $(window).resize(this.onResize);
+
+               // Perform default resizing.
+               this.onResize();
 
                Backbone.history.start();
           },
 
+          /**
+           * Display tree of stations from selected network
+           *
+           * @param {Int} id ID of selected network
+           */
           stations: function(id) {
                var network = networks.get(id);
+
                network.fetch({
                     success: function() {
-                         regions.tree.show(new proto.NetworkTree({
-                              model: network
-                         })).open();
+                         var statView = new proto.NetworkTree({model: network});
+                         regions.tree.show(statView).open();
+
                     }
                });
           },
 
+          /**
+           * Displays new map in map region of selected site
+           *
+           * @param {Object} data Information about site including co-ords
+           */
           site: function(data) {
                regions.map.show(regions.map.view.drawSite(data));
           },
 
+          /** 
+           * Displays image view of site layout in map region.
+           * 
+           * @param {Object} info Data necessary to place each sensor on the map.
+           */
           layout: function(info) {
-               regions.map.show(new proto.SiteLayout({
-                    model: new Backbone.Model({src: opts.imageRoot + info.image})
-                  , collection: new Backbone.Collection(info.channel)
-               }));
+               var meta     = new Backbone.Model({src: opts.imageRoot + info.image})
+                 , channels = new Backbone.Collection(info.channel)
+                 , layout   = new proto.SiteLayout({model: meta,collection: channels});
+
+               // Display channel layout (map or cross section) in map region.
+               regions.map.show(layout);
           },
 
-          channel: function(channel_id) {
-               var history = new proto.History([], {
-                    id: channel_id
-               });
+          /**
+           * Displays history of channel equipment in history region
+           * 
+           * @param {String} channel_id REGEX'd ID of channel to fetch.
+           * @param {Backbone.Region} region Region to display view in.
+           */
+          channel: function(channel_id, region) {
+               //Empty collection to fetch from.
+               var history = new proto.History([], {id: channel_id});
+
+               region = region || 'history';
 
                history.fetch({
                     success: function() {
-                         regions.history.show(new proto.ChannelView({
-                              collection: history
-                         }));
+                         var hist = new proto.ChannelView({collection: history});
+
+                         // History can be displayed in History region or Basic region.
+                         regions[region]show(hist);
                          vent.trigger('open:history');
                     }
                });
 
+               // Save state here so user can return to channel information via bookmark/history.
                appRouter.navigate('/channel/' + channel_id, {replace: true});
           },
 
+          /** 
+           * A simple hook for rendering basic channel history information 
+           * without all the other app clutter.
+           * 
+           * @param {String} channel_id REGEX'd ID of channel to fetch.
+           */
           table: function(channel_id) {
-               var history = new proto.History([], {
-                    id: channel_id
-               });
-
-               history.fetch({
-                    success: function() {
-                         regions.basic.show(new proto.ChannelView({
-                              collection: history
-                         }));
-                         vent.trigger('open:history');
-                    }
-               });
+               this.channel(channel_id, 'basic');
           },
 
+          /** 
+           * Handles responsive app actions -- proxied from window.onresize.
+           */
+          onResize: function() {
+               if($(window).width() <= opts.RESPONSIVE_WIDTH) {
+                    // Fix for mobile to prevent wrapping
+                    $('#app').css('width', ($('#app-wrap').width() - regions.networks.$el.width() - 60) + 'px');
+               }
+          },
+
+          /**
+           * Called when sidebar (containing station tree is closed).
+           */
           onSidebarClose: function() {
                $('#map-canvas').css({
                     width: $('#app').width()
@@ -92,6 +161,9 @@
                vent.trigger('move:map');
           },
 
+          /**
+           * Called when sidebar is opened.
+           */
           onSidebarOpen: function() {
                $('#map-canvas').css({
                     width: $('#app').width() - ($('#tree').width() + 1)
@@ -100,6 +172,9 @@
                vent.trigger('move:map');
           },
 
+          /** 
+           * Called when history is displayed.
+           */
           onHistoryOpen: function() {
                var offset = $(window).width() > opts.RESPONSIVE_WIDTH ? opts.MARGIN : 0;
 
@@ -109,6 +184,9 @@
                vent.trigger('move:tree');
           },
 
+          /** 
+           * Called when history is hidden.
+           */
           onHistoryClose: function() {
                $('#app-wrap').css('height', '100%');
 
@@ -116,12 +194,18 @@
                vent.trigger('move:tree');
           },
 
+          /** 
+           * When container containing map is somehow resized or moved.
+           */
           onMapMove: function() {
                setTimeout(function() {
                     if(regions.map.view) regions.map.view.render();
                }, opts.ANIMATE_LENGTH);
           },
 
+          /**
+           * When container containing station tree is resized or moved.
+           */
           onTreeMove: function() {
                setTimeout(function() {
                     if(regions.tree.view) regions.tree.view.resize();
@@ -129,8 +213,10 @@
           }
      };
 
+     // Router inherits methods from appController.
      RouterController = Backbone.Router.extend(appController);
 
+     // Route hashchanges to appRouter actions.
      appRouter = new RouterController({
           routes: {
                "site/:site"             : "site",
@@ -140,9 +226,13 @@
      });
 
      vent.on('close:layout', function() {
+          // Revert to previous view in map region when layout view is closed.
           regions.map.last();
      });
 
+     /**
+      * Hook into view events and trigger application state changes.
+      */
      vent.on('select:site', appController.site);
      vent.on('select:channel', appController.channel);
      vent.on('select:network', appController.stations);
@@ -154,6 +244,9 @@
      vent.on('move:map', appController.onMapMove);
      vent.on('move:tree', appController.onTreeMove);
 
+     /**
+      * This in essence starts the application by bootstrapping network data
+      */
      networks.fetch({
           success: appController.start
      });
