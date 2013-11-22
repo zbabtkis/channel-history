@@ -15,7 +15,7 @@
      "use strict";
 
      var root      = this
-       , app       = app
+       , app       = root.app
        , vent      = app.vent
        , proto     = app.prototypes
        , opts      = app.options
@@ -121,7 +121,7 @@
                          var hist = new proto.ChannelView({collection: history});
 
                          // History can be displayed in History region or Basic region.
-                         regions[region]show(hist);
+                         regions[region].show(hist);
                          vent.trigger('open:history');
                     }
                });
@@ -248,7 +248,7 @@
       * This in essence starts the application by bootstrapping network data
       */
      networks.fetch({
-          success: appController.start
+          success: _.bind(appController.start, appController)
      });
 
 }).call(this);
