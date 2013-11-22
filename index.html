@@ -1,0 +1,140 @@
+<!doctype html>
+
+<html lang='en'>
+<head>
+	<meta charset="utf8">
+  <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0' />
+
+  <title>Channel History | NEES</title>
+
+  <link href='http://fonts.googleapis.com/css?family=Raleway:400,100' rel='stylesheet' type='text/css'>
+
+  <link rel='stylesheet' href='css/reset.css' />
+  <link rel='stylesheet' href='css/main.css' />
+</head>
+<body id='body'>
+  <div id='app-wrap' class='moving hovered tall region'>
+
+    <div id='sidebar' class='tall region'>
+      <div class='padded'>
+        <div id='networks'>
+          <h1 class='title'>Networks</h1>
+          <div class='networks'></div>
+        </div> <!-- /#networks -->
+      </div> <!-- /.padded -->
+    </div> <!-- /#sidebar -->
+
+    <div id='app' class='tall region'>
+
+      <div id='tree' class='moving tall region'>
+        <div class='toggle open'></div>
+        <div class='inner'>Choose a Network</div>
+      </div> <!-- /#chart -->
+
+      <div id='map-canvas' class='moving tall region'></div>
+
+    </div> <!-- /#app -->
+  </div> <!-- /#app-wrap -->
+  <div id='history'><div class='close icon'></div><div class='inner'></div></div>
+
+  <div id='basic-wrap'>
+    <!-- Render History Here if in iframe -->
+  </div>
+
+  <!-- Templates -->
+
+  <script type='text/template' id='history-template'>
+
+    <% _.each(results, function(result) { %>
+
+      <div class='result hovered'>
+        <h3><%= date(result.ontime) %> - <%= date(result.offtime) %></h3>
+
+        <ul>
+          <li><label>Chan Name</label><p class='high'><%= result.orig_name %></p><p class='low'><%= result.pub_name %></p></li>
+          <li><label>On</label><%= date(result.ontime) %></li>
+          <li><label>Off</label><%= date(result.offtime) %></li>
+          <li><label>Type</label><a target="_blank" href="<%= result.calfile%>"><%= result.type %></a></li>
+          <li><label>Params</label><%= result.param %></li>
+          <li><label>Serial</label><a target="_blank" href="<%= result.sfile %>"><%= result.serial %></a></li>
+          <li><label>Depth</label><%= result.depth %></li>
+          <li><label>Position</label><%= result.northing%> : <%= result.easting %></li>
+          <li><label>Azimuth</label><%= result.azm %></li>
+          <li><label>DAQ</label><p class='high'><%= result.daq %></p><p class='low'><%= result.daqp %></p></li>
+          <li><label>Sensitivity</label><p class='high'><%= result.sensitivity %></p><p class='low'><%= result.calib %></p></li>
+        </ul>
+      </div> <!-- /.result -->
+
+    <% }); %>
+  </script>
+
+  <!-- Outputs History as table (Paul likes this) -->
+
+  <script type='text/template' id='history-table-template'>
+    <% _.each(results, function(channel) { %>
+      <table>
+        <thead>
+          <tr class='condensed'>
+            <th>Chan Name</th>
+            <th>On</th>
+            <th>Off</th>
+            <th colspan="2">Type and params</th>
+            <th>Serial</th>
+            <th>Depth</th>
+            <th>Position</th>
+            <th>Azimuth</th>
+            <th>DAQ</th>
+            <th>Sensitivity</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% _.each(channel, function(result) { %>
+            <tr>
+              <td><p class='high condensed'><%= result.orig_name %></p><p class='low condensed'><%= result.pub_name %></p></td>
+              <td><%= date(result.ontime) %></td>
+              <td><%= date(result.offtime) %></td>
+              <td><a target="_blank" href="<%= result.calfile%>"><%= result.type %></a></td>
+              <td><%= result.param %></td>
+              <td><a target="_blank" href="<%= result.sfile %>"><%= result.serial %></a></td>
+              <td><%= result.depth %></td>
+              <td><%= result.northing%> : <%= result.easting %></td>
+              <td><%= result.azm %></td>
+              <td><p class='high condensed'><%= result.daq %></p><p class='low condensed'><%= result.daqp %></p></td>
+              <td><p class='high condensed'><%= result.sensitivity %></p><p class='low condensed'><%= result.calib %></p></td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    <% }); %>
+  </script>
+
+  <!-- Outputs list of channels with their coordinates on map -->
+
+  <script type='text/template' id='channel-template'>
+    <ul class='channels'>
+    <% _.each(channels, function(channel) { %>
+      <li data-id="<%= channel.name%>" class='channel <%= channel.type %> <%= channel.active === "true" ? "active" : "inactive" %>' style="margin-top: <%= channel.offsetY %>px; margin-left: <%= channel.offsetX %>px;">
+        <span><%= channel.label %></span>
+      </li>
+    <% }); %>
+    </ul>
+  </script>
+
+  <!-- /Templates -->
+
+  <!-- JS Requirements -->
+  <script src="https://maps.googleapis.com/maps/api/js?sensor=false&key=AIzaSyC4J0SCc84i01a7yBADvCH2fEGogsa-u_E"></script>
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/d3/3.3.9/d3.min.js"></script>
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+  <script src='http://underscorejs.org/underscore-min.js'></script>
+  <script src='//cdnjs.cloudflare.com/ajax/libs/backbone.js/1.1.0/backbone-min.js'></script>
+
+  <!-- App Scripts -->
+  <script src='js/_bootstrap.js'></script>
+  <script src='js/settings.js'></script>
+  <script src='js/View.js'></script>
+  <script src='js/Model.js'></script>
+  <script src='js/Regions.js'></script>
+  <script src='js/app.js'></script>
+</body>
+</html>

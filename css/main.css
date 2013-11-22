@@ -1,0 +1,355 @@
+/**
+ * Channel History Styles
+ * ----------------------
+ * 
+ * @author Zachary Babtkis <zackbabtkis@gmail.com>
+ * @contents:
+ *    - Core
+ *    - Application
+ *    - Regions
+ *       1. Sidebar
+ *       2. Viewport
+ *       3. History
+ *    - SVG
+ *    - Helper Classes
+ *    - Icons
+ */
+
+
+/** 
+ * Core
+ */
+body, html {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  line-height: 2em;
+  overflow-y: hidden;
+  min-width: 960px;
+}
+
+body {
+  background: #35322A;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  font-family: Raleway;
+  padding: 50px;
+}
+label:after {
+  content: ": ";
+}
+
+/**
+ * Application
+ */
+
+#app-wrap {
+  width: 100%;
+}
+
+#app {
+  float: left;
+  overflow-y: hidden;
+  width: 85%;
+}
+
+#basic-wrap div {
+  background: #fff;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 99999999;
+}
+
+/**
+ * Regions
+ */
+
+/** Sidebar*/
+
+#sidebar {
+  background: #eee;
+  float: left;
+  width: 15%;
+  min-width: 250px;
+  overflow-y: auto;
+}
+#networks .network {
+  background: rgba(255,255,255, 0.8);
+  cursor: pointer;
+  display: inline-block;
+  font-size: 24px;
+  margin: 5px;
+  padding: 10px 35px;
+  -webkit-transition: all 0.2s;
+  -moz-transition: all 0.2s;
+  -o-transition: all 0.2s;
+  transition: all 0.2s;
+}
+#networks .network:hover {
+  background: #555;
+  color: #fff;
+}
+
+#networks .network.active {
+  background: #222;
+  color: #fff;
+}
+
+/** Viewport */
+
+#map-canvas {
+  width: 100%;
+  float: left;
+  overflow: auto;
+  background: #fff;
+}
+#tree {
+  z-index: 2;
+  float: left;
+  margin-left: -600px;
+  width: 600px;
+  background: url('../images/color-border.jpg');
+}
+#tree .inner {
+  margin: 0 10px 0 0;
+  background: #ddd;
+  height: 100%;
+  text-align: center;
+}
+
+/** History */
+
+#history {
+  float: left;
+  margin-top: 50px;
+  width: 100%;
+  max-height: 50%;
+  overflow: auto;
+}
+#history .result {
+  float: left;
+  margin-right: 50px;
+  width: 270px;
+}
+#history .result h3, thead {
+  color: #fff;
+  margin: 0;
+  padding: 25px 10px;
+  background: #55bacc;
+}
+#history .result:last-child h3 {
+  background: #f9d220;
+  color: #333;
+}
+#history .result ul, table {
+  background: #fff;
+  padding: 15px;
+  margin: 0;
+  font-size: 14px;
+}
+
+table, thead, tbody {
+  width: 100%;
+}
+
+table {
+  margin-top: 30px;
+}
+
+table:first-child {
+  margin-top: 0;
+}
+
+th, td {
+  padding: 5px;
+  text-align: left;
+}
+
+tr:nth-child(even) {
+  background: #eee;
+}
+
+/**
+ * Channel Map
+ */
+
+.channels {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.channels .channel {
+  position: absolute;
+  border-radius: 15px;
+  border-width: 2px;
+  border-style: solid;
+  background: #fff;
+  font-size: 10px;
+  width: 15px;
+  height: 15px;
+}
+
+.channels .channel span {
+  margin-top: -10px;
+  display: block;
+}
+
+.channels .channel.inactive {
+  background: #aaa;
+  border-color: #222;
+}
+
+.channels .channel.active {
+  cursor: pointer;
+}
+
+.channels .channel.acc {
+  border-color: red;
+}
+.channels .channel.pt {
+  border-color: blue;
+}
+.channels .channel.saar {
+  border-color: #333;
+}
+
+/**
+ * SVG
+ */
+.node {
+  cursor: pointer;
+}
+
+.node circle {
+  fill: #fff;
+  stroke: #888;
+  stroke-width: 1.5px;
+}
+
+.link {
+  fill: none;
+  stroke: #ccc;
+  stroke-width: 1.5px;
+}
+
+/**
+ * Helpers
+ */
+
+/** Adjectives */
+.hovered {
+  /**box-shadow: 0 0 6px 0 #111;*/
+}
+
+.padded {
+  padding: 30px;
+}
+
+.moving {
+  -webkit-transition: all .3s;
+  -moz-transition: all .3s;
+  -o-transition: all .3s;
+  transition: all 0.3s;
+}
+
+.tall {
+  height: 100%;
+}
+
+.high {
+  color: #111;
+}
+.low {
+  color: #777;
+  font-size: .8em;
+}
+
+.condensed {
+  line-height: 1.5em;
+  padding: 0;
+  margin: 0;
+}
+
+
+/** Nouns */
+.region {
+  position: relative;
+}
+
+.title {
+  font-size: 2em;
+  margin: 15px 6px;
+}
+
+/**
+ * Icons
+ */
+
+.toggle {
+  width: 30px;
+  height: 90px;
+  background: #eee;
+  right: -30px;
+  position: absolute;
+  top: 50%;
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+  cursor: pointer;
+}
+.toggle:after {
+  position: absolute;
+  top: 32px;
+  -webkit-transform: rotate(90deg);
+  -moz-transform: rotate(90deg);
+  -o-transform: rotate(90deg);
+  transform: rotate(90deg);
+  font-size: 20px;
+  left: -10px;
+}
+
+.toggle.close:after {
+  content: "close";
+}
+
+.toggle.open:after {
+  content: "open";
+}
+
+.icon.close.light:after {
+  color: #eee;
+}
+
+.icon.close.dark:after {
+  color: #333;
+}
+
+.icon.close {
+  position: absolute;
+  right: 10px;
+  cursor: pointer;
+  margin-top: 1px;
+}
+.icon.close:after {
+  content: "\00D7";
+  color: #fff;
+  font-size: 60px;
+}
+
+@media all and (max-width: 1200px) {
+  body {
+    padding: 0;
+  }
+  #history {
+    margin-top: 0;
+  }
+  table {
+    margin-top: 0;
+  }
+}

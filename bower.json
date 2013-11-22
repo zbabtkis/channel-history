@@ -1,0 +1,22 @@
+{
+  "name": "Channel History",
+  "version": "0.0.0",
+  "main": "index.html",
+  "authors": [
+    "Zachary Babtkis <zackbabtkis@gmail.com>"
+  ],
+  "license": "MIT",
+  "homepage": "fern.nees.ucsb.edu/channelHist/public",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "gumby": "~2.5.13",
+    "gumby-parallax": "~1.1.5"
+  }
+}
