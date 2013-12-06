@@ -11,6 +11,8 @@
   	root.app.prototypes = {};
   	// Holds application settings and options.
   	root.app.options    = {};
+	// Holds application regions.
+	root.app.regions    = {};
   	// Make our event aggregator accessible via the app namespace.
   	root.app.vent       = vent;
   	// Make localStorage available through our app namespace.

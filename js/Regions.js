@@ -4,8 +4,8 @@
 	var root = this
 	  , app  = root.app
 	  , settings = app.options
+	  , proto    = app.prototypes
 	  , vent = app.vent;
-
 
 	/**
 	 * Backbone.Region
@@ -83,7 +83,7 @@
 	 * 
 	 * Can be opend and cloesd with 'toggle' button.
 	 */
-	var SidebarRegion = Backbone.Region.extend({
+	proto.SidebarRegion = Backbone.Region.extend({
 		events: {
 			'click .toggle.close': 'close',
 			'click .toggle.open':  'open'
@@ -92,8 +92,6 @@
 		initialize: function() {
 			Backbone.Region.prototype.initialize.apply(this, arguments);
 			this.$toggle = this.$('.toggle');
-
-			this.fitContents();
 		},
 
 		close: function() {
@@ -104,14 +102,19 @@
 				'margin-left': - this.$el.width() - 14 + 'px'
 			});
 
+			this.isOpen = false;
+
 			return this;
 		},
 
 		fitContents: function() {
 			var $nets = this.$('#networks')
 			  , $tree = this.$('#tree');
+			
+			console.log(app.$el);
 
-			$tree.css('height', $('#app').height() - $nets.height());
+	
+			$tree.css('height', app.$el.height() - $nets.height());
 
 			return this;
 		},
@@ -123,8 +126,12 @@
 				'margin-left': 0
 			});
 
+			this.isOpen = true;
+
 			return this;
-		}
+		},
+
+		isOpen: false
 	});
 
 	/** 
@@ -132,7 +139,7 @@
 	 *
 	 * - Can be closed with the '.close' button.
 	 */
-	var HistoryRegion = Backbone.Region.extend({
+	proto.HistoryRegion = Backbone.Region.extend({
 		events: {
 			'click .close': 'close',
 			"dragstart": "windowView"
@@ -190,7 +197,7 @@
 	/** 
 	 * Custom Region for displaying map and station layout.
 	 */
-	var MapRegion = Backbone.Region.extend({
+	proto.MapRegion = Backbone.Region.extend({
 		show: function() {
 			Backbone.Region.prototype.show.apply(this, arguments);
 
@@ -199,38 +206,10 @@
 		},
 
 		resize: function(offset) {
-			var $sidebar = app.regions.sidebar.$el;
-			console.log(offset);
-
 			this.$el.css({
-				width: $('#app').width() - settings.BORDER - offset 
+				width: app.$el.width() - settings.BORDER - offset 
 			});
 		}
 	});
 
-	/** 
-	 * Instantiate our app regions!
-	 */
-	app.regions = {
-		sidebar: new SidebarRegion({
-			el: '#sidebar'
-		}),
-		networks: new Backbone.Region({
-			el: '#networks',
-			renderIn: '.networks'
-		}),
-		tree: new Backbone.Region({
-			el: '#tree'
-		}),
-		map: new MapRegion({
-			el: '#map-canvas'
-		}),
-		history: new HistoryRegion({
-			el: '#history',
-			renderIn: '.inner'
-		}),
-		basic: new Backbone.Region({
-			el: '#basic-wrap'
-		})
-	};
 }).call(this);

@@ -6,7 +6,7 @@
 		proto = app.prototypes,
 		vent = app.vent,
 		store = app.store,
-		$app = $('#app'),
+		$app = app.$el,
 		$side = $('#sidebar'),
 		$nets = $('#networks');
 
@@ -300,7 +300,7 @@
 			.text(function(d) {
 					return d.name;
 				})
-				.style('font-size', '16px')
+				.style('font-size', '12px')
 				.style("fill-opacity", 1e-6);
 
 			var nodeUpdate = node.transition()

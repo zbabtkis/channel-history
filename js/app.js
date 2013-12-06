@@ -20,7 +20,7 @@
        , proto     = app.prototypes
        , opts      = app.options
        , store     = app.store
-       , regions   = app.regions;
+       , regions   = app.regions;   
 
      var appController, RouterController, appRouter;
 
@@ -45,8 +45,37 @@
            *  - called when networks are loaded from server call
            */
           start: function() {
+			   app.$el = $('#app');
+
                var mapView = new proto.MapView()
-                 , netView = new proto.NetworkList({collection: networks});
+                 , netView = new proto.NetworkList({collection: networks})
+				 , _this   = this;
+
+				
+			   /** 
+			    * Instantiate our app regions!
+			    */
+			   
+			   regions.sidebar = new proto.SidebarRegion({
+			   		el: '#sidebar'
+			   });
+			   regions.networks = new Backbone.Region({
+			   		el: '#networks',
+			   		renderIn: '.networks'
+			   });
+			   regions.tree = new Backbone.Region({
+			   		el: '#tree'
+			   	});
+			   regions.map = new proto.MapRegion({
+			   		el: '#map-canvas'
+			   });
+			   regions.history = new proto.HistoryRegion({
+			   		el: '#history',
+			   		renderIn: '.inner'
+			   });
+			   regions.basic = new Backbone.Region({
+			   		el: '#basic-wrap'
+			   });
 
                _.bindAll(this, 'onResize');
 
@@ -55,11 +84,15 @@
 
                // Show default map (without site overlays).
                regions.map.show(mapView);
-               // Bind resize event to controller.
-               $(window).resize(this.onResize);
 
+               // Bind resize event to throttled controller action.
+               $(window).resize(function() {
+					_this.resizing = setTimeout(function() {
+						clearTimeout(_this.resizing);
+						_this.onResize();
+					}, 300);
+				});
                // Perform default resizing.
-               this.onResize();
 
                Backbone.history.start();
           },
@@ -145,8 +178,13 @@
            */
           onResize: function() {
                if($(window).width() <= opts.RESPONSIVE_WIDTH) {
-                    // Fix for mobile to prevent wrapping
-                    //$('#app').css('width', ($('#app-wrap').width() - regions.networks.$el.width() - 60) + 'px');
+					var sb = regions.sidebar;
+
+					if(sb.isOpen) {
+						this.onSidebarOpen();
+					} else {
+						this.onSidebarClose();
+					}
                }
           },
 
@@ -176,10 +214,13 @@
            */
           onHistoryOpen: function() {
                var offset = $(window).width() > opts.RESPONSIVE_WIDTH ? opts.MARGIN : 0
-				 , $app   = $('#app')
-			 	 , $table = $('#history');
+				 , $app   = app.$el
+			 	 , $table = $('#history')
+				 , size   = $table.height() ? $table.height() + offset : 0;
 
-			   $app.css('height', $(window).height() - $table.height() - (offset * 3));
+			console.log(size);
+ 
+			   app.$el.css('height', $(document.body).height() - size); 
 			   regions.history.$el.addClass('open');
 
                vent.trigger('move:map');
@@ -190,7 +231,7 @@
            * Called when history is hidden.
            */
           onHistoryClose: function() {
-               $('#app').css('height', '100%');
+               app.$el.css('height', '100%');
 
 			   regions.history.$el.removeClass('open');
                vent.trigger('move:map');
