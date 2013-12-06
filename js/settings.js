@@ -1,4 +1,6 @@
 ;(function() {
+	"use strict";
+
 	var root     = this
 	  , app      = root.app
 	  , settings = app.options;
@@ -15,6 +17,8 @@
 	settings.RESPONSIVE_WIDTH = 1200;
 	// Margin to use around application.
 	settings.MARGIN           = 50;
+	// Border width to use in application
+	settings.BORDER           = 12;
 
 	// Where station images are stored on server.
 	settings.imageRoot = '/zhst/sites/images/';

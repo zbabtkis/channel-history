@@ -1,6 +1,7 @@
 ;(function() {
 	var root = this
 	  , app  = root.app
+	  , settings = app.options
 	  , vent = app.vent;
 
 
@@ -80,15 +81,17 @@
 	 * 
 	 * Can be opend and cloesd with 'toggle' button.
 	 */
-	var StationRegion = Backbone.Region.extend({
+	var SidebarRegion = Backbone.Region.extend({
 		events: {
 			'click .toggle.close': 'close',
-			'click .toggle.open': 'open'
+			'click .toggle.open':  'open'
 		},
 
 		initialize: function() {
 			Backbone.Region.prototype.initialize.apply(this, arguments);
 			this.$toggle = this.$('.toggle');
+
+			this.fitContents();
 		},
 
 		close: function() {
@@ -96,14 +99,22 @@
 			vent.trigger('close:sidebar');
 			this.$toggle.attr('class', 'toggle open');
 			this.$el.css({
-				'margin-left': -this.$el.width()
+				'margin-left': - this.$el.width() - 14 + 'px'
 			});
 
 			return this;
 		},
 
+		fitContents: function() {
+			var $nets = this.$('#networks')
+			  , $tree = this.$('#tree');
+
+			$tree.css('height', $('#app').height() - $nets.height());
+
+			return this;
+		},
+
 		open: function() {
-			// Warn application that sidebar is about to open.
 			vent.trigger('open:sidebar');
 			this.$toggle.attr('class', 'toggle close');
 			this.$el.css({
@@ -121,7 +132,51 @@
 	 */
 	var HistoryRegion = Backbone.Region.extend({
 		events: {
-			'click .close': 'close'
+			'click .close': 'close',
+			"dragstart": "windowView"
+		},
+
+		windowView: function(e) {
+			// Open new window to display table in.
+			this.external = window.open("", "History", 'left=-500, top=0, toolbar=no, status=no, location=no, menubar=no');
+
+			var edom  = this.external.document;
+
+			// Add helper class to blank window
+			edom.body.className = "no-app";
+
+			// Add styles to blank window
+			copyStyles(document, edom);
+
+			// When app closes or reloads, current table window should be closed.
+			window.addEventListener('unload', function() {
+				this.external.close();
+			}.bind(this), null);
+
+			// This is needed for drop on new window to work.
+			edom.body.addEventListener('dragover', function(e) {
+				e.preventDefault();
+			}, false);	
+
+			// Close window if user decides not to drop table.
+			edom.body.addEventListener('dragleave', function() {
+				this.external.close();
+			}.bind(this), false);
+
+			// Listen for user dropping table on new window.
+			edom.body.addEventListener('drop', function(e) {
+				edom.body.appendChild(this.el);
+				// Does history close animation and other tasks related to history closing.
+				vent.trigger('close:history');
+				e.preventDefault();
+			}.bind(this), false);
+
+			// When external table window is closed, table should be inserted back into app.
+			this.external.addEventListener('unload', function(e) {
+				document.body.appendChild(this.el);
+				// Does history open animation and other necessary tasks for reinsertion.
+				vent.trigger('open:history');
+			}.bind(this));
 		},
 
 		close: function() {
@@ -139,20 +194,31 @@
 
 			// Map should be redrawn after our view is rendered.
 			vent.trigger('move:map');
-		} 
+		},
+
+		resize: function(offset) {
+			var $sidebar = app.regions.sidebar.$el;
+			console.log(offset);
+
+			this.$el.css({
+				width: $('#app').width() - settings.BORDER - offset 
+			});
+		}
 	});
 
 	/** 
 	 * Instantiate our app regions!
 	 */
 	app.regions = {
+		sidebar: new SidebarRegion({
+			el: '#sidebar'
+		}),
 		networks: new Backbone.Region({
 			el: '#networks',
 			renderIn: '.networks'
 		}),
-		tree: new StationRegion({
-			el: '#tree',
-			renderIn: '.inner'
+		tree: new Backbone.Region({
+			el: '#tree'
 		}),
 		map: new MapRegion({
 			el: '#map-canvas'

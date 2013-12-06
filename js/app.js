@@ -50,11 +50,11 @@
 
                _.bindAll(this, 'onResize');
 
-               // Show default map (without site overlays).
-               regions.map.show(mapView);
                // Show networks list in Networks region.
                regions.networks.show(netView);
 
+               // Show default map (without site overlays).
+               regions.map.show(mapView);
                // Bind resize event to controller.
                $(window).resize(this.onResize);
 
@@ -75,7 +75,7 @@
                network.fetch({
                     success: function() {
                          var statView = new proto.NetworkTree({model: network});
-                         regions.tree.show(statView).open();
+                         regions.tree.show(statView);
 
                     }
                });
@@ -114,14 +114,14 @@
                //Empty collection to fetch from.
                var history = new proto.History([], {id: channel_id});
 
-               region = region || 'history';
+               region = region || regions.history;
 
                history.fetch({
                     success: function() {
                          var hist = new proto.ChannelView({collection: history});
 
                          // History can be displayed in History region or Basic region.
-                         regions[region].show(hist);
+                         region.show(hist);
                          vent.trigger('open:history');
                     }
                });
@@ -137,7 +137,7 @@
            * @param {String} channel_id REGEX'd ID of channel to fetch.
            */
           table: function(channel_id) {
-               this.channel(channel_id, 'basic');
+               this.channel(channel_id, regions.basic);
           },
 
           /** 
@@ -146,7 +146,7 @@
           onResize: function() {
                if($(window).width() <= opts.RESPONSIVE_WIDTH) {
                     // Fix for mobile to prevent wrapping
-                    $('#app').css('width', ($('#app-wrap').width() - regions.networks.$el.width() - 60) + 'px');
+                    //$('#app').css('width', ($('#app-wrap').width() - regions.networks.$el.width() - 60) + 'px');
                }
           },
 
@@ -154,10 +154,10 @@
            * Called when sidebar (containing station tree is closed).
            */
           onSidebarClose: function() {
-               $('#map-canvas').css({
-                    width: $('#app').width()
-               });
+			   var offset = parseInt(regions.sidebar.$el.css('margin-left'), 10);
 
+			   regions.map.resize(offset);
+			
                vent.trigger('move:map');
           },
 
@@ -165,10 +165,9 @@
            * Called when sidebar is opened.
            */
           onSidebarOpen: function() {
-               $('#map-canvas').css({
-                    width: $('#app').width() - ($('#tree').width() + 1)
-               });
+			   var offset = parseInt(regions.sidebar.$el.css('margin-left'), 10);
 
+			   regions.map.resize(-offset);
                vent.trigger('move:map');
           },
 
@@ -176,9 +175,12 @@
            * Called when history is displayed.
            */
           onHistoryOpen: function() {
-               var offset = $(window).width() > opts.RESPONSIVE_WIDTH ? opts.MARGIN : 0;
+               var offset = $(window).width() > opts.RESPONSIVE_WIDTH ? opts.MARGIN : 0
+				 , $app   = $('#app')
+			 	 , $table = $('#history');
 
-               $('#app-wrap').css('height', ($('body').height() - (regions.history.$el.height() + offset)) + 'px');
+			   $app.css('height', $(window).height() - $table.height() - (offset * 3));
+			   regions.history.$el.addClass('open');
 
                vent.trigger('move:map');
                vent.trigger('move:tree');
@@ -188,8 +190,9 @@
            * Called when history is hidden.
            */
           onHistoryClose: function() {
-               $('#app-wrap').css('height', '100%');
+               $('#app').css('height', '100%');
 
+			   regions.history.$el.removeClass('open');
                vent.trigger('move:map');
                vent.trigger('move:tree');
           },
@@ -206,8 +209,10 @@
           /**
            * When container containing station tree is resized or moved.
            */
-          onTreeMove: function() {
+          onSidebarMove: function() {
+            regions.sidebar.fitContents();
                setTimeout(function() {
+					regions.sidebar.fitContents();
                     if(regions.tree.view) regions.tree.view.resize();
                }, opts.ANIMATE_LENGTH);
           }
@@ -242,7 +247,7 @@
      vent.on('open:history', appController.onHistoryOpen);
      vent.on('close:history', appController.onHistoryClose);
      vent.on('move:map', appController.onMapMove);
-     vent.on('move:tree', appController.onTreeMove);
+     vent.on('move:tree', appController.onSidebarMove);
 
      /**
       * This in essence starts the application by bootstrapping network data

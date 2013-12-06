@@ -2,40 +2,31 @@
 
 <html lang='en'>
 <head>
-	<meta charset="utf8">
+	<meta charset="utf8" />
   <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0' />
 
   <title>Channel History | NEES</title>
 
-  <link href='http://fonts.googleapis.com/css?family=Raleway:400,100' rel='stylesheet' type='text/css'>
+  <link href='http://fonts.googleapis.com/css?family=Raleway:400,100' rel='stylesheet' type='text/css' />
 
   <link rel='stylesheet' href='css/reset.css' />
   <link rel='stylesheet' href='css/main.css' />
 </head>
 <body id='body'>
-  <div id='app-wrap' class='moving hovered tall region'>
-
-    <div id='sidebar' class='tall region'>
-      <div class='padded'>
-        <div id='networks'>
-          <h1 class='title'>Networks</h1>
-          <div class='networks'></div>
-        </div> <!-- /#networks -->
-      </div> <!-- /.padded -->
+  <div id='app' class='moving hovered tall region'>
+    <div id='sidebar' class='moving tall region'>
+      <div class='toggle open'></div>
+      <div id='networks'>
+        <h1 class='title'>Networks</h1>
+        <div class='networks'></div>
+      </div> <!-- /#networks -->
+      <div id='tree'>Choose a Network</div>
     </div> <!-- /#sidebar -->
 
-    <div id='app' class='tall region'>
+    <div id='map-canvas' class='moving tall region'></div>
 
-      <div id='tree' class='moving tall region'>
-        <div class='toggle open'></div>
-        <div class='inner'>Choose a Network</div>
-      </div> <!-- /#chart -->
-
-      <div id='map-canvas' class='moving tall region'></div>
-
-    </div> <!-- /#app -->
-  </div> <!-- /#app-wrap -->
-  <div id='history'><div class='close icon'></div><div class='inner'></div></div>
+  </div> <!-- /#app -->
+  <div id='history' draggable='true'><div class='close icon'></div><div class='inner'></div></div>
 
   <div id='basic-wrap'>
     <!-- Render History Here if in iframe -->
@@ -71,7 +62,6 @@
   <!-- Outputs History as table (Paul likes this) -->
 
   <script type='text/template' id='history-table-template'>
-    <% _.each(results, function(channel) { %>
       <table>
         <thead>
           <tr class='condensed'>
@@ -87,25 +77,26 @@
             <th>Sensitivity</th>
           </tr>
         </thead>
-        <tbody>
-          <% _.each(channel, function(result) { %>
-            <tr>
-              <td><p class='high condensed'><%= result.orig_name %></p><p class='low condensed'><%= result.pub_name %></p></td>
-              <td><%= date(result.ontime) %></td>
-              <td><%= date(result.offtime) %></td>
-              <td><a target="_blank" href="<%= result.calfile%>"><%= result.type %></a></td>
-              <td><%= result.param %></td>
-              <td><a target="_blank" href="<%= result.sfile %>"><%= result.serial %></a></td>
-              <td><%= result.depth %></td>
-              <td><%= result.northing%> : <%= result.easting %></td>
-              <td><%= result.azm %></td>
-              <td><p class='high condensed'><%= result.daq %></p><p class='low condensed'><%= result.daqp %></p></td>
-              <td><p class='high condensed'><%= result.sensitivity %></p><p class='low condensed'><%= result.calib %></p></td>
-            </tr>
-          <% }); %>
-        </tbody>
+        <% _.each(results, function(channel) { %>
+          <tbody>
+            <% _.each(channel, function(result) { %>
+              <tr>
+                <td><p class='high condensed'><%= result.orig_name %></p><p class='low condensed'><%= result.pub_name %></p></td>
+                <td><%= date(result.ontime) %></td>
+                <td><%= date(result.offtime) %></td>
+                <td><a target="_blank" href="<%= result.sfile%>"><%= result.type %></a></td>
+                <td><%= result.param %></td>
+                <td><a target="_blank" href="<%= result.calfile %>"><%= result.serial %></a></td>
+                <td><%= result.depth %></td>
+                <td><%= result.northing%> : <%= result.easting %></td>
+                <td><p class='high condensed'><%= result.azm %></p><p class='low condensed'><%= result.vang %>&deg;</p></td>
+                <td><p class='high condensed'><%= result.daq %></p><p class='low condensed'><%= result.daqp %></p></td>
+                <td><p class='high condensed'><%= result.sensitivity %></p><p class='low condensed'><%= result.calib %></p></td>
+              </tr>
+            <% }); %>
+          </tbody>
+		<% }); %>
       </table>
-    <% }); %>
   </script>
 
   <!-- Outputs list of channels with their coordinates on map -->
@@ -128,6 +119,9 @@
   <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
   <script src='http://underscorejs.org/underscore-min.js'></script>
   <script src='//cdnjs.cloudflare.com/ajax/libs/backbone.js/1.1.0/backbone-min.js'></script>
+
+  <!-- Use to copy styles to another window -->
+  <script src="js/StyleCopier.js"></script>
 
   <!-- App Scripts -->
   <script src='js/_bootstrap.js'></script>
