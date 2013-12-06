@@ -1,4 +1,6 @@
 ;(function() {
+	"use strict";
+
 	var root     = this
 	  , ls       = root.localStorage || {}        // Holds stored application information (via local storage).
       , vent     = _.extend({}, Backbone.Events); // Event aggregator to keep app components decoupled

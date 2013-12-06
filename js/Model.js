@@ -1,4 +1,6 @@
 ;(function() {
+	"use strict";
+
 	var root  = this
 	  , app   = root.app
 	  , proto = root.app.prototypes;

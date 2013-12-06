@@ -1,5 +1,7 @@
 ;(function() {
-	var root = this
+	"use strict";
+
+	var root = this,
 		app = root.app,
 		proto = app.prototypes,
 		vent = app.vent,
@@ -205,8 +207,6 @@
 			margin: {
 				left: 0,
 				right: 0,
-				left: 0,
-				right: 0
 			}
 		},
 

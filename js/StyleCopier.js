@@ -15,6 +15,8 @@
  * @return {Style Element} Style element if no target given.
  */
 var copyStyles = function(source, target) {
+  "use strict";
+
   var sheets = source.styleSheets
     , styles = document.createElement('style');
   
