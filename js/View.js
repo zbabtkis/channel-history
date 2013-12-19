@@ -62,7 +62,13 @@
 		initialize: function() {
 			_.bindAll(this, 'render', 'drawSite');
 
-			window.map = this.map = new google.maps.Map(this.el, app.options.map);
+			this.map       = new google.maps.Map(this.el, app.options.map);
+			this.markers   = [];
+			this.minZoom   = 7;
+			this.maxZoom   = 17;
+			this.zoomLevel = this.minZoom;
+
+			this.map.setZoom(this.zoomLevel);
 
 			// Re-render map after animation has occured.
 			setTimeout(this.render, app.options.ANIMATE_LENGTH);
@@ -78,12 +84,7 @@
 			var info = data.info,
 				site = new google.maps.LatLng(data.lat, data.lon);
 
-			if (this.marker) {
-
-				// Remove previous marker from map.
-				this.marker.setMap(null);
-
-			}
+			if(this.markers[data.name]) return this;
 
 			if (info) {
 
@@ -91,13 +92,12 @@
 				var imageBounds = new google.maps.LatLngBounds(
 					new google.maps.LatLng(info.bounds.x0, info.bounds.y0),
 					new google.maps.LatLng(info.bounds.x1, info.bounds.y1)
-
 				);
 
-				this.marker = new google.maps.GroundOverlay(
+				this.markers[data.name] = new google.maps.GroundOverlay(
 					app.options.imageRoot + info.thumbbe,
 					imageBounds, 70);
-				this.marker.setMap(this.map);
+				this.markers[data.name].setMap(this.map);
 
 				// When layout icon is clicked, trigger a layout selection.
 				google.maps.event.addListener(this.marker, 'click', function() {
@@ -107,20 +107,86 @@
 			} else {
 
 				// If no app info, display simple dot on map where station is.
-				this.marker = new google.maps.Circle({
-					center: site,
-					fillColor: 'yellow',
-					radius: 20,
+				this.markers[data.name] = new google.maps.Marker({
+					position: site,
 					map: this.map
 				});
 			}
 
-			// Center site on selected station.
-			this.map.setCenter(site);
-			this.map.setZoom(17);
-
 			return this;
+		},
+
+		showSite: function(data) {
+			var _this = this;
+
+			if(!_this.markers[data.name]) return;
+
+			this.currentSite = _this.markers[data.name].getPosition();
+
+			if(this.lastSite) {
+				this.zoom('out')
+					.then(function() {
+						_this.map.panTo(_this.currentSite);
+					})
+					.then(function() {
+						_this.zoom('in');
+					});
+			} else {
+				this.map.panTo(this.currentSite);
+				this.zoom('in');
+			}
+
+			this.lastSite = this.currentSite;
+		},
+
+		zoom: function(direction, dfd) {
+			var _this = this
+			  , defer = dfd || jQuery.Deferred()
+			  , minZoom = this.getZoomByBounds(new google.maps.LatLngBounds(this.lastSite, this.currentSite));
+
+			this.zoomLevel = this.map.getZoom();
+
+			var zoom = function(zoomable) {
+				_this.map.setZoom(_this.zoomLevel);
+				if(zoomable()) {
+					setTimeout(function() {zoom(zoomable);}, 400);
+				} else {
+					_this.zooming = false
+					defer.resolve();
+				}
+			};
+
+			if(direction === 'in') {
+				zoom(function() { var z = _this.zoomLevel <= _this.maxZoom; _this.zoomLevel++; return z; });
+			} else {
+				zoom(function() { var z = _this.zoomLevel >= minZoom; _this.zoomLevel--; return z; });
+			}
+
+			return defer.promise();
+		},
+
+		getZoomByBounds: function(bounds) {
+			var MAX_ZOOM = this.map.mapTypes.get(this.map.getMapTypeId()).maxZoom || this.maxZoom 
+			  , MIN_ZOOM = this.map.mapTypes.get(this.map.getMapTypeId()).minZoom || this.minZoom;
+
+			var ne = this.map.getProjection().fromLatLngToPoint( bounds.getNorthEast() )
+			  , sw = this.map.getProjection().fromLatLngToPoint( bounds.getSouthWest() );
+
+			var worldCoordWidth = Math.abs(ne.x-sw.x)
+			  , worldCoordHeight = Math.abs(ne.y-sw.y);
+
+			var FIT_PAD = 40;
+
+			for(var zoom = MAX_ZOOM; zoom >= MIN_ZOOM; zoom--) {
+				if(worldCoordWidth * (1<<zoom) + 2 * FIT_PAD < $(this.map.getDiv()).width() &&
+				   worldCoordHeight * (1<<zoom) + 2 * FIT_PAD < $(this.map.getDiv()).height()) {
+				   return zoom;
+				}
+			}
+
+			return 0;
 		}
+
 	});
 
 	/**

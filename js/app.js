@@ -85,6 +85,13 @@
                // Show default map (without site overlays).
                regions.map.show(mapView);
 
+			   $.getJSON('/zhst/api/sites')
+			   	.done(function(data) {
+					for(var i = 0, j = data.length; i < j; i++) {
+						mapView.drawSite(data[i]);
+					}
+				});
+
                // Bind resize event to throttled controller action.
                $(window).resize(function() {
 					_this.resizing = setTimeout(function() {
@@ -120,7 +127,7 @@
            * @param {Object} data Information about site including co-ords
            */
           site: function(data) {
-               regions.map.show(regions.map.view.drawSite(data));
+               regions.map.view.showSite(data);
           },
 
           /** 
@@ -217,8 +224,6 @@
 				 , $app   = app.$el
 			 	 , $table = $('#history')
 				 , size   = $table.height() ? $table.height() + offset : 0;
-
-			console.log(size);
  
 			   app.$el.css('height', $(document.body).height() - size); 
 			   regions.history.$el.addClass('open');

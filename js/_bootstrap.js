@@ -2,7 +2,6 @@
 	"use strict";
 
 	var root     = this
-	  , ls       = root.localStorage || {}        // Holds stored application information (via local storage).
       , vent     = _.extend({}, Backbone.Events); // Event aggregator to keep app components decoupled
 
     // Our namespace -- original huh...
@@ -16,6 +15,6 @@
   	// Make our event aggregator accessible via the app namespace.
   	root.app.vent       = vent;
   	// Make localStorage available through our app namespace.
-  	root.app.store      = ls;
+  	root.app.store      = window.localStorage || {};
 
 }).call(this);
